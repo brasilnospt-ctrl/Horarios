@@ -37,6 +37,8 @@ button,select,input{font:inherit;color:inherit}
 .warn{color:var(--bad);font-size:13px;font-weight:600;margin-top:2px}
 .bn{background:color-mix(in srgb,var(--bad) 12%,var(--sf));border:1px solid var(--bad);border-radius:12px;padding:10px 12px;margin-bottom:10px;font-weight:600}
 .bn small{display:block;font-weight:400;color:var(--mu)}
+.pf{display:flex;gap:6px;margin-bottom:12px}.pf select{flex:1}.pf .b{padding:8px 11px}
+.bk{margin-top:22px;padding:12px;border:1px solid var(--bd);border-radius:12px;background:var(--sf)}.bk .s2{font-size:13px;color:var(--mu);margin:4px 0 10px}.bk .s2.w{color:var(--bad);font-weight:600}.r2{display:flex;gap:8px}.r2 .b{flex:1}
 .empty{color:var(--mu);text-align:center;padding:28px 8px;border:1px dashed var(--bd);border-radius:12px}
 .sum{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 4px}
 .chip{border:1px solid var(--bd);border-radius:999px;padding:4px 10px;font-size:13px;background:var(--sf)}
@@ -62,6 +64,7 @@ input,select{width:100%;padding:10px;border:1px solid var(--bd);border-radius:10
 <body>
 <main>
 <h1>Os meus horários</h1>
+<div class="pf"><select id="pf" aria-label="Perfil"></select><button class="b" id="pn" aria-label="Novo perfil">＋</button><button class="b" id="pr" aria-label="Renomear perfil">✎</button><button class="b" id="pd" aria-label="Apagar perfil">🗑</button></div>
 <div class="top">
   <span class="wk" id="wk"></span>
   <div class="nav"><button class="b" id="pv" aria-label="Semana anterior">‹</button><button class="b" id="hj">Hoje</button><button class="b" id="nx" aria-label="Semana seguinte">›</button></div>
@@ -70,6 +73,7 @@ input,select{width:100%;padding:10px;border:1px solid var(--bd);border-radius:10
 <div id="bn"></div><div id="list"></div>
 <div class="sum" id="sum"></div>
 <div style="color:var(--mu);font-size:13px">Horas desta semana por categoria.</div>
+<div class="bk"><b>Cópia de segurança</b><div id="bs" class="s2"></div><div class="r2"><button class="b" id="bx">Guardar cópia</button><button class="b" id="bi">Restaurar cópia</button></div><input type="file" id="bf" style="display:none"></div>
 </main>
 <button class="fab" id="add">+ Novo horário</button>
 
@@ -91,26 +95,18 @@ input,select{width:100%;padding:10px;border:1px solid var(--bd);border-radius:10
 var CATS={escola:["Escola","var(--c1)"],conducao:["Condução","var(--c2)"],estagio:["Estágio","var(--c3)"],outro:["Outro","var(--c4)"],aviso:["Sem aulas / greve","var(--bad)"]};
 var WD=["Segunda","Terça","Quarta","Quinta","Sexta","Sábado","Domingo"],WS=["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"];
 var ev=[],sel=new Date(),editId=null;
-try{ev=JSON.parse(localStorage.getItem("horarios_v1")||"[]")||[]}catch(e){ev=[]}
-(function(){var seen=false;try{seen=!!localStorage.getItem("horarios_seed1")}catch(e){}if(seen)return;
-var S=[[45,"2026-12-14","12:00"],[46,"2026-12-18","12:00"],[47,"2026-12-18","13:00"],[48,"2026-12-21","10:00"],[49,"2026-12-21","11:00"],[50,"2026-12-22","09:00"],[51,"2026-12-22","10:00"],[52,"2026-12-23","10:00"]];
-S.forEach(function(a){var id="cond"+a[0];if(ev.some(function(x){return x.id===id}))return;var m=mins(a[2])+50,e=String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0");
-ev.push({id:id,t:"Aula prática B n.º"+a[0],c:"conducao",s:a[2],e:e,rep:"d",date:a[1],p:"Escola de Condução Arcadas"})});
-save();try{localStorage.setItem("horarios_seed1","1")}catch(e){}})();
-(function(){var seen=false;try{seen=!!localStorage.getItem("horarios_seed2")}catch(e){}if(seen)return;
-var T={GID:["GID (Gestão de Instalações Desportivas)","Catarina Sampayo"],MAT:["Matemática","Sandra Vilches"],EF:["Educação Física","Marta Gabriel"],PLNM:["Português Língua Não Materna","Maria Carmo Machado"],GPPD:["GPPD (Gestão de Programas e Projetos no Desporto)","Ema Adelaide Brito"],PAFD:["PAFD (Práticas de Atividades Físicas e Desportivas)","Marta Gabriel"],PSIC:["Psicologia","Célia Costa"],OGD:["OGD (Organização e Gestão do Desporto)","Mafalda Guimarães"],EMR:["Educação Moral e Religiosa","José António Oliveira"]};
-var S=[[0,"GID","09:15","11:15","D004"],[0,"MAT","13:30","15:20","D004"],[0,"EF","15:30","16:20","Pav1"],[1,"PLNM","08:15","10:05","D104"],[1,"GPPD","10:25","13:15","D005"],[1,"PAFD","14:30","16:20","D002"],[1,"PSIC","16:30","17:20","D004"],[2,"EF","08:15","09:05","Exterior"],[2,"OGD","09:15","10:05","D004"],[2,"PSIC","10:25","11:15","D004"],[2,"PLNM","11:25","13:15","C102"],[2,"EMR","14:30","15:20","D005"],[3,"GPPD","08:15","10:05","D102"],[3,"PAFD","10:25","13:15","D004"],[4,"OGD","08:15","09:05","D004"],[4,"GID","09:15","11:15","D004"],[4,"PSIC","11:25","13:15","D004"]];
-S.forEach(function(a,i){var n=T[a[1]];ev.push({id:"esc"+i,t:n[0],c:"escola",s:a[2],e:a[3],rep:"w",wd:a[0],p:"Sala "+a[4]+" · "+n[1]})});
-save();try{localStorage.setItem("horarios_seed2","1")}catch(e){}})();
-(function(){var seen=false;try{seen=!!localStorage.getItem("horarios_seed3")}catch(e){}if(seen)return;
-[[3,"15:00","17:30"],[2,"15:00","16:30"],[5,"09:00","12:30"]].forEach(function(a,i){ev.push({id:"est"+i,t:"Estágio",c:"estagio",s:a[1],e:a[2],rep:"w",wd:a[0],p:""})});
-save();try{localStorage.setItem("horarios_seed3","1")}catch(e){}})();
-(function(){var seen=false;try{seen=!!localStorage.getItem("horarios_seed4")}catch(e){}if(seen)return;
-ev.push({id:"exame1",t:"Exame de condução",c:"conducao",s:"11:00",e:"12:00",rep:"d",date:"2026-12-23",p:"Escola de Condução Arcadas"});
-save();try{localStorage.setItem("horarios_seed4","1")}catch(e){}})();
+var PR=[],cur="";
+try{PR=JSON.parse(localStorage.getItem("horarios_profiles")||"[]")||[]}catch(e){PR=[]}
+if(!PR.length)PR=[{id:"p1",name:"Perfil 1"}];
+try{cur=localStorage.getItem("horarios_cur")||""}catch(e){}
+if(!PR.some(function(p){return p.id===cur}))cur=PR[0].id;
+function keyOf(id){return id==="p1"?"horarios_v1":"horarios_p_"+id}
+function loadEv(){try{ev=JSON.parse(localStorage.getItem(keyOf(cur))||"[]")||[]}catch(e){ev=[]}}
+function savePr(){try{localStorage.setItem("horarios_profiles",JSON.stringify(PR));localStorage.setItem("horarios_cur",cur)}catch(e){}}
+loadEv();
 var OFF=[["2026-12-08","2026-12-08","Feriado: Imaculada Conceição"],["2026-12-25","2026-12-25","Feriado: Natal"],["2026-12-16","2026-12-31","Férias de Natal"],["2027-01-01","2027-01-01","Feriado: Ano Novo"],["2027-02-08","2027-02-10","Interrupção do Carnaval"],["2027-03-26","2027-03-26","Feriado: Sexta-feira Santa"],["2027-03-22","2027-04-02","Férias da Páscoa"],["2027-05-27","2027-05-27","Feriado: Corpo de Deus"],["2027-06-10","2027-06-10","Feriado: Dia de Portugal"],["2027-06-13","2027-06-13","Feriado municipal de Lisboa: Santo António"]];
 function offDay(d){var k=key(d),r=[];OFF.forEach(function(o){if(k>=o[0]&&k<=o[1])r.push(o[2])});return r}
-function save(){try{localStorage.setItem("horarios_v1",JSON.stringify(ev))}catch(e){}}
+function save(){try{localStorage.setItem(keyOf(cur),JSON.stringify(ev))}catch(e){}bkStat()}
 var $=function(i){return document.getElementById(i)};
 function key(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function wdOf(d){return (d.getDay()+6)%7}
@@ -169,6 +165,33 @@ $("list").onclick=function(e){var b=e.target.closest(".ev");if(b)openF(ev.filter
 $("pv").onclick=function(){sel=addD(sel,-7);render()};
 $("nx").onclick=function(){sel=addD(sel,7);render()};
 $("hj").onclick=function(){sel=new Date();render()};
+function fillPf(){$("pf").innerHTML=PR.map(function(p){return '<option value="'+p.id+'"'+(p.id===cur?" selected":"")+'>'+esc(p.name)+'</option>'}).join("");$("pd").disabled=PR.length<2;bkStat()}
+function sw(id){cur=id;savePr();loadEv();fillPf();render()}
+function curP(){return PR.filter(function(x){return x.id===cur})[0]}
+$("pf").onchange=function(){sw(this.value)};
+$("pn").onclick=function(){var n=(prompt("Nome do novo perfil:")||"").trim();if(!n)return;var id="u"+Date.now();PR.push({id:id,name:n});sw(id)};
+$("pr").onclick=function(){var p=curP(),n=(prompt("Novo nome:",p.name)||"").trim();if(!n)return;p.name=n;savePr();fillPf()};
+$("pd").onclick=function(){if(PR.length<2)return;var p=curP();if(!confirm("Apagar o perfil "+p.name+" e todos os horários dele?"))return;try{localStorage.removeItem(keyOf(cur))}catch(e){}PR=PR.filter(function(x){return x.id!==cur});sw(PR[0].id)};
+function okEv(e){return e&&typeof e.t==="string"&&/^\d\d:\d\d$/.test(e.s)&&/^\d\d:\d\d$/.test(e.e)&&CATS[e.c]&&(e.rep==="w"||e.rep==="d")}
+function allData(){return {app:"horarios",v:1,cur:cur,profiles:PR.map(function(p){var e;if(p.id===cur)e=ev;else{try{e=JSON.parse(localStorage.getItem(keyOf(p.id))||"[]")||[]}catch(x){e=[]}}return {id:p.id,name:p.name,ev:e}})}}
+function bkStat(){var t=null;try{t=localStorage.getItem("horarios_lastbk")}catch(e){}var el=$("bs");
+if(!t){el.textContent=ev.length?"Ainda não guardaste nenhuma cópia. Se mudares ou formatares o telemóvel, perdes os horários.":"Depois de adicionares os teus horários, guarda uma cópia.";el.className="s2"+(ev.length?" w":"")}
+else{var d=new Date(+t),old=(Date.now()-d)/864e5>14;el.textContent="Última cópia: "+d.toLocaleDateString("pt-PT")+(old?" (já passaram mais de 14 dias, guarda outra)":"");el.className="s2"+(old?" w":"")}}
+$("bx").onclick=function(){var txt=JSON.stringify(allData()),nm="horarios-"+key(new Date())+".json";
+function done(){try{localStorage.setItem("horarios_lastbk",String(Date.now()))}catch(e){}bkStat()}
+try{var f=new File([txt],nm,{type:"application/json"});if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:"Cópia dos horários"}).then(done).catch(function(){});return}}catch(e){}
+var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([txt],{type:"application/json"}));a.download=nm;document.body.appendChild(a);a.click();a.remove();done()};
+$("bi").onclick=function(){$("bf").click()};
+$("bf").onchange=function(){var f=this.files[0];this.value="";if(!f)return;var r=new FileReader();r.onload=function(){var o;try{o=JSON.parse(r.result)}catch(e){}
+if(!o||o.app!=="horarios"||!Array.isArray(o.profiles)||!o.profiles.length){alert("Este ficheiro não é uma cópia válida desta app.");return}
+o.profiles.forEach(function(p){p.ev=(Array.isArray(p.ev)?p.ev:[]).filter(okEv)});
+var n=o.profiles.reduce(function(s,p){return s+p.ev.length},0);
+if(!confirm("Restaurar "+o.profiles.length+" perfil(is) com "+n+" horários? Isto substitui o que está neste telemóvel."))return;
+PR.forEach(function(p){try{localStorage.removeItem(keyOf(p.id))}catch(e){}});
+PR=o.profiles.map(function(p){return {id:String(p.id),name:String(p.name||"Perfil")}});
+o.profiles.forEach(function(p){try{localStorage.setItem(keyOf(String(p.id)),JSON.stringify(p.ev))}catch(e){}});
+cur=PR.some(function(p){return p.id===String(o.cur)})?String(o.cur):PR[0].id;savePr();loadEv();fillPf();render();alert("Cópia restaurada.")};r.readAsText(f)};
+fillPf();
 $("bn").onclick=function(e){var b=e.target.closest(".bn");if(b&&b.dataset.id)openF(ev.filter(function(x){return x.id===b.dataset.id})[0])};
 render();
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
